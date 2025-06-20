@@ -5,7 +5,6 @@ name: Compile LaTeX to PDF & HTML, then Deploy to GitHub Pages
 on:
   push:
     branches: [ main ] # Kích hoạt khi có commit được push lên branch 'main'
-                       # Đảm bảo 'main' là tên branch chính của bạn (có thể là 'master')
   workflow_dispatch: # Cho phép bạn chạy Workflow này thủ công từ GitHub UI
 
 # Cấu hình quyền hạn cần thiết cho Workflow
@@ -28,20 +27,26 @@ jobs:
         run: |
           mkdir -p output/pdf # Thư mục để chứa file PDF đã biên dịch
           mkdir -p output/html # Thư mục để chứa các file HTML đã chuyển đổi (cho GitHub Pages)
-          # 'mkdir -p' sẽ tạo thư mục nếu nó chưa tồn tại, hoặc không làm gì nếu đã tồn tại
 
-      # BƯỚC ĐÃ SỬA: Biên dịch LaTeX sang PDF VÀ cài đặt tex4ht cùng lúc
-      - name: Compile LaTeX to PDF and Install tex4ht
-        uses: xu-cheng/latex-action@v2 # Sử dụng action 'latex-action' phiên bản 2
-        with:
-          root_file: main.tex # Tên file LaTeX gốc của bạn (phải nằm ở thư mục gốc của repo)
-          compiler: pdflatex # Chỉ định trình biên dịch LaTeX là pdflatex
-          args: '-outdir=output/pdf' # Truyền tùy chọn cho latexmk/compiler để xuất PDF vào thư mục output/pdf
-          # DÒNG MỚI QUAN TRỌNG: Cài đặt gói 'tex4ht' (chứa make4ht)
-          extra_packages: tex4ht
+      # BƯỚC MỚI & QUAN TRỌNG: Cài đặt TeX Live đầy đủ (bao gồm tex4ht và make4ht)
+      # Đây là cách đáng tin cậy nhất để đảm bảo make4ht có sẵn.
+      - name: Install full TeX Live (including make4ht)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive-full # Cài đặt gói TeX Live đầy đủ
 
-      # Bước: Chuyển đổi LaTeX sang HTML bằng make4ht
-      # make4ht bây giờ sẽ có sẵn trong PATH nhờ bước trước đó.
+      # Bước 1: Biên dịch LaTeX sang PDF bằng pdflatex
+      # Bây giờ pdflatex đã có sẵn từ texlive-full
+      - name: Compile LaTeX to PDF
+        # Không cần dùng xu-cheng/latex-action@v2 nữa, vì pdflatex đã có sẵn
+        # và make4ht không thể chạy trong môi trường riêng của latex-action
+        run: |
+          # pdflatex -output-directory=output/pdf main.tex
+          # Hoặc dùng latexmk cho tiện lợi hơn (latexmk cũng có trong texlive-full)
+          latexmk -pdf -outdir=output/pdf main.tex
+
+      # Bước 2: Chuyển đổi LaTeX sang HTML bằng make4ht
+      # make4ht bây giờ chắc chắn sẽ có sẵn trong PATH.
       - name: Convert LaTeX to HTML with make4ht
         run: |
           make4ht -d output/html main.tex "html" # Chạy make4ht để tạo HTML trong output/html
@@ -52,14 +57,14 @@ jobs:
             exit 1 # Thoát job nếu file không tồn tại
           fi
 
-      # Bước: Upload file PDF đã biên dịch làm Artifact
+      # Bước 3: Upload file PDF đã biên dịch làm Artifact
       - name: Upload PDF artifact
         uses: actions/upload-artifact@v4
         with:
           name: compiled-pdf # Tên của artifact (sẽ hiển thị trên GitHub Actions)
           path: output/pdf/main.pdf # Đường dẫn đến file PDF đã biên dịch
 
-      # Bước: Upload các file HTML làm Artifact cho GitHub Pages
+      # Bước 4: Upload các file HTML làm Artifact cho GitHub Pages
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
