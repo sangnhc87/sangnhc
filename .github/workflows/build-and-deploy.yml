@@ -39,10 +39,10 @@ jobs:
           compiler: pdflatex # Chỉ định trình biên dịch LaTeX là pdflatex
           args: '-outdir=output/pdf' # Truyền tùy chọn cho latexmk/compiler để xuất PDF vào thư mục output/pdf
 
-      # BƯỚC ĐÃ SỬA: Thiết lập TeX Live và cài đặt tex4ht cho make4ht
-      # Sử dụng action 'xu-cheng/setup-texlive' thay vì 'dante-editor/setup-texlive'
+      # BƯỚC ĐÃ SỬA LẠI (SỬ DỤNG V3): Thiết lập TeX Live và cài đặt tex4ht cho make4ht
+      # Sử dụng action 'xu-cheng/setup-texlive' phiên bản V3
       - name: Setup TeX Live with tex4ht
-        uses: xu-cheng/setup-texlive@v1 # Đã thay đổi action và phiên bản
+        uses: xu-cheng/setup-texlive@v3 # Đã thay đổi phiên bản thành V3
         with:
           profile: minimal # Bắt đầu với profile minimal để cài đặt nhanh nhất
           packages: tex4ht # Cài đặt cụ thể gói 'tex4ht' (chứa make4ht) thông qua tlmgr
