@@ -39,10 +39,10 @@ jobs:
           compiler: pdflatex # Chỉ định trình biên dịch LaTeX là pdflatex
           args: '-outdir=output/pdf' # Truyền tùy chọn cho latexmk/compiler để xuất PDF vào thư mục output/pdf
 
-      # BƯỚC MỚI VÀ QUAN TRỌNG: Thiết lập TeX Live và cài đặt tex4ht cho make4ht
-      # Action này sẽ cài đặt TeX Live một cách đầy đủ hơn trên runner, đảm bảo make4ht có sẵn trong PATH.
+      # BƯỚC ĐÃ SỬA: Thiết lập TeX Live và cài đặt tex4ht cho make4ht
+      # Sử dụng action 'xu-cheng/setup-texlive' thay vì 'dante-editor/setup-texlive'
       - name: Setup TeX Live with tex4ht
-        uses: dante-editor/setup-texlive@latest # Sử dụng action setup-texlive chuyên dụng
+        uses: xu-cheng/setup-texlive@v1 # Đã thay đổi action và phiên bản
         with:
           profile: minimal # Bắt đầu với profile minimal để cài đặt nhanh nhất
           packages: tex4ht # Cài đặt cụ thể gói 'tex4ht' (chứa make4ht) thông qua tlmgr
@@ -63,7 +63,7 @@ jobs:
       - name: Upload PDF artifact
         uses: actions/upload-artifact@v4
         with:
-          name: compiled-pdf
+          name: compiled-pdf # Tên của artifact (sẽ hiển thị trên GitHub Actions)
           path: output/pdf/main.pdf # Đường dẫn đến file PDF đã biên dịch
 
       # Bước 5: Upload các file HTML làm Artifact cho GitHub Pages
@@ -90,6 +90,6 @@ jobs:
     needs: [build-documents, setup-pages] # Job này phụ thuộc vào cả hai job trước đó
 
     steps:
-      - name: Deploy to GitHub Pages 
+      - name: Deploy to GitHub Pages # Bước: Triển khai nội dung lên GitHub Pages
         id: deployment # Đặt ID cho bước này để có thể tham chiếu URL sau
         uses: actions/deploy-pages@v4 # Action để triển khai lên GitHub Pages
