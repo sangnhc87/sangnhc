@@ -90,6 +90,6 @@ jobs:
     needs: [build-documents, setup-pages] # Job này phụ thuộc vào cả hai job trước đó
 
     steps:
-      - name: Deploy to GitHub Pages # Bước: Triển khai nội dung lên GitHub Pages
+      - name: Deploy to GitHub Pages 
         id: deployment # Đặt ID cho bước này để có thể tham chiếu URL sau
         uses: actions/deploy-pages@v4 # Action để triển khai lên GitHub Pages
