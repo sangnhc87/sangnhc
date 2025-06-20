@@ -30,6 +30,11 @@ jobs:
           compiler: pdflatex
           args: '-outdir=output/pdf'
 
+      - name: Install make4ht
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive texlive-latex-extra texlive-fonts-recommended texlive-plain-generic tex4ht
+
       - name: Convert LaTeX to HTML with make4ht
         run: |
           make4ht -d output/html main.tex "html"
@@ -51,7 +56,6 @@ jobs:
         with:
           path: output/html
 
-  # ⚠️ Bổ sung bước thiết lập GitHub Pages trước khi deploy
   setup-pages:
     runs-on: ubuntu-latest
     needs: build-documents
@@ -64,7 +68,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: [build-documents, setup-pages]  # cần cả setup và build xong
+    needs: [build-documents, setup-pages]
 
     steps:
       - name: Deploy to GitHub Pages
