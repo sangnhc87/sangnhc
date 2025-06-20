@@ -30,25 +30,18 @@ jobs:
           mkdir -p output/html # Thư mục để chứa các file HTML đã chuyển đổi (cho GitHub Pages)
           # 'mkdir -p' sẽ tạo thư mục nếu nó chưa tồn tại, hoặc không làm gì nếu đã tồn tại
 
-      # Bước 1: Biên dịch LaTeX sang PDF bằng pdflatex
-      # Vẫn dùng xu-cheng/latex-action@v2 vì nó tối ưu cho việc biên dịch PDF nhanh chóng.
-      - name: Compile LaTeX to PDF with pdflatex
+      # BƯỚC ĐÃ SỬA: Biên dịch LaTeX sang PDF VÀ cài đặt tex4ht cùng lúc
+      - name: Compile LaTeX to PDF and Install tex4ht
         uses: xu-cheng/latex-action@v2 # Sử dụng action 'latex-action' phiên bản 2
         with:
           root_file: main.tex # Tên file LaTeX gốc của bạn (phải nằm ở thư mục gốc của repo)
           compiler: pdflatex # Chỉ định trình biên dịch LaTeX là pdflatex
           args: '-outdir=output/pdf' # Truyền tùy chọn cho latexmk/compiler để xuất PDF vào thư mục output/pdf
+          # DÒNG MỚI QUAN TRỌNG: Cài đặt gói 'tex4ht' (chứa make4ht)
+          extra_packages: tex4ht
 
-      # BƯỚC ĐÃ SỬA LẠI (SỬ DỤNG V3): Thiết lập TeX Live và cài đặt tex4ht cho make4ht
-      # Sử dụng action 'xu-cheng/setup-texlive' phiên bản V3
-      - name: Setup TeX Live with tex4ht
-        uses: xu-cheng/setup-texlive@v3 # Đã thay đổi phiên bản thành V3
-        with:
-          profile: minimal # Bắt đầu với profile minimal để cài đặt nhanh nhất
-          packages: tex4ht # Cài đặt cụ thể gói 'tex4ht' (chứa make4ht) thông qua tlmgr
-
-      # Bước 3: Chuyển đổi LaTeX sang HTML bằng make4ht
-      # Bây giờ, make4ht sẽ có sẵn trong PATH và lệnh này sẽ chạy thành công.
+      # Bước: Chuyển đổi LaTeX sang HTML bằng make4ht
+      # make4ht bây giờ sẽ có sẵn trong PATH nhờ bước trước đó.
       - name: Convert LaTeX to HTML with make4ht
         run: |
           make4ht -d output/html main.tex "html" # Chạy make4ht để tạo HTML trong output/html
@@ -59,14 +52,14 @@ jobs:
             exit 1 # Thoát job nếu file không tồn tại
           fi
 
-      # Bước 4: Upload file PDF đã biên dịch làm Artifact
+      # Bước: Upload file PDF đã biên dịch làm Artifact
       - name: Upload PDF artifact
         uses: actions/upload-artifact@v4
         with:
           name: compiled-pdf # Tên của artifact (sẽ hiển thị trên GitHub Actions)
           path: output/pdf/main.pdf # Đường dẫn đến file PDF đã biên dịch
 
-      # Bước 5: Upload các file HTML làm Artifact cho GitHub Pages
+      # Bước: Upload các file HTML làm Artifact cho GitHub Pages
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
