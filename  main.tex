@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc} % Quan trọng cho tiếng Việt
+\usepackage[T5]{fontenc} % Để hỗ trợ tiếng Việt nếu cần
+\usepackage{hyperref} % Tốt cho các liên kết trong HTML
+\usepackage{graphicx} % Để nhúng ảnh nếu có
+\usepackage{float} % Để kiểm soát vị trí ảnh
+
+\title{Tài liệu Thử nghiệm LaTeX sang PDF và HTML}
+\author{Sangnhc}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Giới thiệu}
+Đây là một tài liệu LaTeX đơn giản để minh họa việc biên dịch sang PDF và chuyển đổi sang HTML bằng \texttt{make4ht}.
+
+\subsection{Mục con: Tính năng}
+Nội dung của mục con. Chúng ta có thể có \textbf{văn bản in đậm} và \textit{văn bản in nghiêng}.
+\href{https://github.com}{Click vào đây để đến GitHub}.
+
+\begin{figure}[H]
+    \centering
+    % Giả sử bạn có một file ảnh `example.png` trong repo
+    % Để đơn giản, bạn có thể bỏ phần ảnh này nếu không có file ảnh
+    % \includegraphics[width=0.5\textwidth]{example.png}
+    \caption{Ví dụ Hình ảnh (nếu có)}
+    \label{fig:example}
+\end{figure}
+
+\section{Kết luận}
+Hy vọng quy trình này hoạt động tốt và bạn có thể xem tài liệu của mình dưới dạng PDF và HTML!
+\end{document}
