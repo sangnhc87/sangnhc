@@ -1,0 +1,75 @@
+name: Compile LaTeX to PDF & HTML, then Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ] # Kích hoạt khi có push lên branch 'main'
+  workflow_dispatch: # Cho phép chạy workflow thủ công từ GitHub UI
+
+permissions:
+  contents: read      # Cần để checkout code
+  pages: write        # Cần để triển khai lên GitHub Pages
+  id-token: write     # Cần cho OpenID Connect (OIDC) để xác thực với GitHub Pages
+
+jobs:
+  build-documents:
+    runs-on: ubuntu-latest # Chạy trên môi trường Ubuntu mới nhất
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Kéo mã nguồn về máy ảo runner
+
+      - name: Create output directories
+        run: |
+          mkdir -p output/pdf # Thư mục cho PDF
+          mkdir -p output/html # Thư mục cho HTML (cho GitHub Pages)
+
+      # Bước 1: Biên dịch LaTeX sang PDF bằng pdflatex
+      - name: Compile LaTeX to PDF with pdflatex
+        uses: xu-cheng/latex-action@v2 # Action chuyên dụng để biên dịch LaTeX
+        with:
+          root_file: main.tex # File LaTeX gốc của bạn
+          compiler: pdflatex # Chỉ định sử dụng pdflatex
+          latexmk_options: '-outdir=output/pdf' # Xuất PDF vào thư mục output/pdf
+
+      # Bước 2: Chuyển đổi LaTeX sang HTML bằng make4ht
+      # make4ht là công cụ từ tex4ht, được thiết kế để chuyển đổi LaTeX sang HTML.
+      # Nó thường được cài đặt sẵn với các bản phân phối TeX Live cơ bản hoặc trung bình.
+      - name: Convert LaTeX to HTML with make4ht
+        run: |
+          # Chạy make4ht. Lệnh này sẽ tạo ra main.html, main.css và các file liên quan
+          # trong thư mục output/html.
+          # Sử dụng `-d` để chỉ định thư mục đầu ra.
+          make4ht -d output/html main.tex "html"
+
+          # Kiểm tra xem make4ht đã tạo file .html chưa
+          ls -l output/html/
+          if [ ! -f output/html/main.html ]; then
+            echo "Lỗi: main.html không được tạo ra bởi make4ht."
+            exit 1
+          fi
+
+      # Bước 3: Upload file PDF đã biên dịch làm Artifact
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-pdf
+          path: output/pdf/main.pdf # Đường dẫn đến file PDF đã biên dịch
+
+      # Bước 4: Upload các file HTML làm Artifact cho GitHub Pages
+      # Tất cả các file trong thư mục output/html sẽ được nén và chuẩn bị cho triển khai
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: output/html # Đường dẫn đến thư mục chứa tất cả các file HTML và tài nguyên liên quan
+
+  # Job để triển khai các file đã tạo lên GitHub Pages
+  deploy-pages:
+    environment:
+      name: github-pages # Môi trường triển khai GitHub Pages
+      url: ${{ steps.deployment.outputs.page_url }} # URL của trang đã triển khai
+    runs-on: ubuntu-latest
+    needs: build-documents # Job này phụ thuộc vào job 'build-documents'
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # Action để triển khai lên GitHub Pages
